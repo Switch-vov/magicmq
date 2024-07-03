@@ -1,9 +1,9 @@
 package com.switchvov.magicmq.demo;
 
-import com.switchvov.magicmq.core.MagicBroker;
-import com.switchvov.magicmq.core.MagicConsumer;
-import com.switchvov.magicmq.core.MagicMessage;
-import com.switchvov.magicmq.core.MagicProducer;
+import com.switchvov.magicmq.client.MagicBroker;
+import com.switchvov.magicmq.client.MagicConsumer;
+import com.switchvov.magicmq.model.MagicMessage;
+import com.switchvov.magicmq.client.MagicProducer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

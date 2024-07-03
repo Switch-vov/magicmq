@@ -1,5 +1,6 @@
-package com.switchvov.magicmq.core;
+package com.switchvov.magicmq.client;
 
+import com.switchvov.magicmq.model.MagicMessage;
 import lombok.AllArgsConstructor;
 
 import java.util.Objects;

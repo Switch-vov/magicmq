@@ -1,4 +1,4 @@
-package com.switchvov.magicmq.core;
+package com.switchvov.magicmq.client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
