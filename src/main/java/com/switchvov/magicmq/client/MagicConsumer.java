@@ -1,8 +1,8 @@
 package com.switchvov.magicmq.client;
 
-import com.switchvov.magicmq.model.MagicMessage;
+import com.switchvov.magicmq.model.Message;
+import lombok.Getter;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -16,27 +16,41 @@ public class MagicConsumer<T> {
 
     private String id;
     private MagicBroker broker;
-    private String topic;
-    private MagicMQ mq;
+    @Getter
+    private MagicListener listener;
 
     public MagicConsumer(MagicBroker broker) {
         this.broker = broker;
         this.id = "CID" + ID_GEN.getAndIncrement();
     }
 
-    public void subscribe(String topic) {
-        this.topic = topic;
-        mq = broker.find(this.topic);
-        if (Objects.isNull(mq)) {
-            throw new RuntimeException("topic not found");
-        }
+    public String getId() {
+        return id;
     }
 
-    public MagicMessage<T> poll(long timeout) {
-        return mq.poll(timeout);
+    public void sub(String topic) {
+        broker.sub(topic, id);
     }
 
-    public void listen(MagicListener<T> listener) {
-        mq.addListener(listener);
+    public void unsub(String topic) {
+        broker.unsub(topic, id);
+    }
+
+    public Message<T> recv(String topic) {
+        return broker.recv(topic, id);
+    }
+
+    public boolean ack(String topic, int offset) {
+        return broker.ack(topic, id, offset);
+    }
+
+    public boolean ack(String topic, Message<?> message) {
+        int offset = Integer.parseInt(message.getHeaders().get("X-offset"));
+        return ack(topic, offset);
+    }
+
+    public void listen(String topic, MagicListener<T> listener) {
+        this.listener = listener;
+        broker.addConsumer(topic, this);
     }
 }

@@ -2,6 +2,7 @@ package com.switchvov.magicmq.model;
 
 import lombok.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,18 +15,18 @@ import java.util.concurrent.atomic.AtomicLong;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MagicMessage<T> {
+public class Message<T> {
     private static final AtomicLong ID_GEN = new AtomicLong();
 
     private Long id;
     private T body;
-    private Map<String, String> headers;
+    private Map<String, String> headers = new HashMap<>();
 
     public static long getId() {
         return ID_GEN.getAndIncrement();
     }
 
-    public static MagicMessage<?> create(String body, Map<String, String> headers) {
-        return new MagicMessage<>(getId(), body, headers);
+    public static Message<?> create(String body, Map<String, String> headers) {
+        return new Message<>(getId(), body, headers);
     }
 }

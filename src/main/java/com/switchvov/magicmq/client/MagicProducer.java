@@ -1,9 +1,7 @@
 package com.switchvov.magicmq.client;
 
-import com.switchvov.magicmq.model.MagicMessage;
+import com.switchvov.magicmq.model.Message;
 import lombok.AllArgsConstructor;
-
-import java.util.Objects;
 
 /**
  * message queue producer.
@@ -15,11 +13,7 @@ import java.util.Objects;
 public class MagicProducer {
     private MagicBroker broker;
 
-    public boolean send(String topic, MagicMessage<?> message) {
-        MagicMQ mq = broker.find(topic);
-        if (Objects.isNull(mq)) {
-            throw new RuntimeException("topic not found");
-        }
-        return mq.send(message);
+    public boolean send(String topic, Message<?> message) {
+        return broker.send(topic, message);
     }
 }

@@ -1,6 +1,6 @@
 package com.switchvov.magicmq.client;
 
-import com.switchvov.magicmq.model.MagicMessage;
+import com.switchvov.magicmq.model.Message;
 
 /**
  * message listener.
@@ -9,5 +9,5 @@ import com.switchvov.magicmq.model.MagicMessage;
  * @since 2024/7/1
  */
 public interface MagicListener<T> {
-    void onMessage(MagicMessage<T> message);
+    void onMessage(Message<T> message);
 }
