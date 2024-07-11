@@ -16,3 +16,6 @@ GET http://localhost:8765/magicmq/recv?t=com.switchvov.test&cid=test
 
 ### ack消息
 GET http://localhost:8765/magicmq/ack?t=com.switchvov.test&cid=test&offset=2
+
+### stat
+GET http://localhost:8765/magicmq/stat?t=com.switchvov.test&cid=CID0

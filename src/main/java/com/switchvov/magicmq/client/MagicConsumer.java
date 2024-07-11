@@ -1,6 +1,7 @@
 package com.switchvov.magicmq.client;
 
 import com.switchvov.magicmq.model.Message;
+import com.switchvov.magicmq.model.Stat;
 import lombok.Getter;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,5 +53,9 @@ public class MagicConsumer<T> {
     public void listen(String topic, MagicListener<T> listener) {
         this.listener = listener;
         broker.addConsumer(topic, this);
+    }
+
+    public Stat stat(String topic) {
+        return broker.stat(topic, id);
     }
 }

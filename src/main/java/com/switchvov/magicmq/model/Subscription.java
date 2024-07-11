@@ -1,7 +1,8 @@
-package com.switchvov.magicmq.server;
+package com.switchvov.magicmq.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Message Subscription.
@@ -11,7 +12,8 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class MessageSubscription {
+@NoArgsConstructor
+public class Subscription {
     private String topic;
     private String consumerId;
     private int offset = -1;

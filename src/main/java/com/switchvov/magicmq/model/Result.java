@@ -41,4 +41,8 @@ public class Result<T> {
     public static Result<List<Message<?>>> msg(List<Message<?>> msg) {
         return new Result<>(1, msg);
     }
+
+    public static Result<Stat> stat(Stat stat) {
+        return new Result<>(1, stat);
+    }
 }

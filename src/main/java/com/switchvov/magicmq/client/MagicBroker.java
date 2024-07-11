@@ -3,6 +3,7 @@ package com.switchvov.magicmq.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.switchvov.magicmq.model.Message;
 import com.switchvov.magicmq.model.Result;
+import com.switchvov.magicmq.model.Stat;
 import com.switchvov.magicutils.HttpUtils;
 import com.switchvov.magicutils.JsonUtils;
 import com.switchvov.magicutils.ThreadUtils;
@@ -111,5 +112,15 @@ public class MagicBroker {
 
     public void addConsumer(String topic, MagicConsumer<?> consumer) {
         consumers.add(topic, consumer);
+    }
+
+    // GET http://localhost:8765/magicmq/stat?t=com.switchvov.test&cid=CID0
+    public Stat stat(String topic, String cid) {
+        log.info(" ===>[MagicMQ] stat topic/cid: {}/{}", topic, cid);
+        Result<Stat> result = HttpUtils.httpGet(brokerUrl + "/stat?t=" + topic + "&cid=" + cid,
+                new TypeReference<Result<Stat>>() {
+                });
+        log.info(" ===>[MagicMQ] stat result: {}", result);
+        return result.getData();
     }
 }

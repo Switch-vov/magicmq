@@ -1,6 +1,11 @@
 package com.switchvov.magicmq.server;
 
 import com.switchvov.magicmq.model.Message;
+import com.switchvov.magicmq.model.Stat;
+import com.switchvov.magicmq.model.Subscription;
+import com.switchvov.magicmq.store.Indexer;
+import com.switchvov.magicmq.store.Store;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -24,36 +29,32 @@ public class MessageQueue {
         QUEUES.put(TEST_TOPIC, new MessageQueue(TEST_TOPIC));
     }
 
-    private Map<String, MessageSubscription> subscriptions = new HashMap<>();
+    @Getter
+    private Map<String, Subscription> subscriptions = new HashMap<>();
     private String topic;
-    private Message<?>[] queue = new Message[1024 * 10];
-    private int index = 0;
+    @Getter
+    private Store store = null;
+
 
     public MessageQueue(String topic) {
         this.topic = topic;
+        store = new Store(topic);
+        store.init();
     }
 
-    private Map<String, MessageSubscription> getSubscriptions() {
-        return subscriptions;
-    }
 
-    public int send(Message<?> message) {
-        if (index >= queue.length) {
-            return -1;
-        }
+    public int send(Message<String> message) {
+        int offset = store.pos();
         if (Objects.isNull(message.getHeaders())) {
             message.setHeaders(new HashMap<>());
         }
-        message.getHeaders().put("X-offset", String.valueOf(index));
-        queue[index++] = message;
-        return index;
+        message.getHeaders().put("X-offset", String.valueOf(offset));
+        store.write(message);
+        return offset;
     }
 
-    public Message<?> recv(int ind) {
-        if (ind <= index) {
-            return queue[ind];
-        }
-        return null;
+    public Message<?> recv(int offset) {
+        return store.read(offset);
     }
 
     public static List<Message<?>> batch(String topic, String consumerId, int size) {
@@ -64,10 +65,14 @@ public class MessageQueue {
         if (!messageQueue.getSubscriptions().containsKey(consumerId)) {
             throw new RuntimeException("subscription not found for topic/consumerId = " + topic + "/" + consumerId);
         }
-        int ind = messageQueue.getSubscriptions().get(consumerId).getOffset();
-        int offset = ind + 1;
+        int offset = messageQueue.getSubscriptions().get(consumerId).getOffset();
+        int nextOffset = 0;
+        if (offset > -1) {
+            Indexer.Entry entry = Indexer.getEntry(topic, offset);
+            nextOffset = offset + entry.getLength();
+        }
         List<Message<?>> result = new ArrayList<>();
-        Message<?> recv = messageQueue.recv(offset);
+        Message<?> recv = messageQueue.recv(nextOffset);
         while (Objects.nonNull(recv)) {
             result.add(recv);
             if (result.size() > size) {
@@ -80,12 +85,24 @@ public class MessageQueue {
         return result;
     }
 
-    public void subscribe(MessageSubscription subscription) {
+    public static Stat stat(String topic, String consumerId) {
+        MessageQueue messageQueue = QUEUES.get(topic);
+        if (Objects.isNull(messageQueue)) {
+            throw new RuntimeException("topic: " + topic + " not found");
+        }
+        if (!messageQueue.getSubscriptions().containsKey(consumerId)) {
+            throw new RuntimeException("subscription not found for topic/consumerId = " + topic + "/" + consumerId);
+        }
+        Subscription subscription = messageQueue.getSubscriptions().get(consumerId);
+        return new Stat(subscription, messageQueue.getStore().total(), messageQueue.getStore().pos());
+    }
+
+    public void subscribe(Subscription subscription) {
         String consumerId = subscription.getConsumerId();
         subscriptions.putIfAbsent(consumerId, subscription);
     }
 
-    public void unsubscribe(MessageSubscription subscription) {
+    public void unsubscribe(Subscription subscription) {
         String consumerId = subscription.getConsumerId();
         subscriptions.remove(consumerId);
     }
@@ -99,7 +116,7 @@ public class MessageQueue {
         return messageQueue.send(message);
     }
 
-    public static Message<?> recv(String topic, String consumerId, int ind) {
+    public static Message<?> recv(String topic, String consumerId, int offset) {
         MessageQueue messageQueue = QUEUES.get(topic);
         if (Objects.isNull(messageQueue)) {
             throw new RuntimeException("topic: " + topic + " not found");
@@ -107,7 +124,7 @@ public class MessageQueue {
         if (!messageQueue.getSubscriptions().containsKey(consumerId)) {
             throw new RuntimeException("subscriptions not found for topic/consumerId = " + topic + "/" + consumerId);
         }
-        return messageQueue.recv(ind);
+        return messageQueue.recv(offset);
     }
 
     public static Message<?> recv(String topic, String consumerId) {
@@ -118,14 +135,19 @@ public class MessageQueue {
         if (!messageQueue.getSubscriptions().containsKey(consumerId)) {
             throw new RuntimeException("subscriptions not found for topic/consumerId = " + topic + "/" + consumerId);
         }
-        int ind = messageQueue.getSubscriptions().get(consumerId).getOffset() + 1;
-        Message<?> recv = messageQueue.recv(ind);
-        log.info(" ===>[MagicMQ] recv: topic/cid/offset = {}/{}/{}", topic, consumerId, ind);
+        int offset = messageQueue.getSubscriptions().get(consumerId).getOffset();
+        int nextOffset = 0;
+        if (offset > -1) {
+            Indexer.Entry entry = Indexer.getEntry(topic, offset);
+            nextOffset = offset + entry.getLength();
+        }
+        Message<?> recv = messageQueue.recv(nextOffset);
+        log.info(" ===>[MagicMQ] recv: topic/cid/offset = {}/{}/{}", topic, consumerId, offset);
         log.info(" ===>[MagicMQ] recv: message: {}", recv);
         return recv;
     }
 
-    public static void sub(MessageSubscription subscription) {
+    public static void sub(Subscription subscription) {
         MessageQueue messageQueue = QUEUES.get(subscription.getTopic());
         if (Objects.isNull(messageQueue)) {
             throw new RuntimeException("topic: " + subscription.getTopic() + " not found");
@@ -134,7 +156,7 @@ public class MessageQueue {
         messageQueue.subscribe(subscription);
     }
 
-    public static void unsub(MessageSubscription subscription) {
+    public static void unsub(Subscription subscription) {
         MessageQueue messageQueue = QUEUES.get(subscription.getTopic());
         if (Objects.isNull(messageQueue)) {
             throw new RuntimeException("topic: " + subscription.getTopic() + " not found");
@@ -151,8 +173,8 @@ public class MessageQueue {
         if (!messageQueue.getSubscriptions().containsKey(consumerId)) {
             throw new RuntimeException("subscriptions not found for topic/consumerId = " + topic + "/" + consumerId);
         }
-        MessageSubscription subscription = messageQueue.getSubscriptions().get(consumerId);
-        if (offset > subscription.getOffset() && offset <= messageQueue.index) {
+        Subscription subscription = messageQueue.getSubscriptions().get(consumerId);
+        if (offset > subscription.getOffset() && offset <= Store.LEN) {
             log.info(" ===>[MagicMQ] ack: topic/cid/offset = {}/{}/{}", topic, consumerId, offset);
             subscription.setOffset(offset);
             return offset;

@@ -4,10 +4,12 @@ import com.switchvov.magicmq.client.MagicBroker;
 import com.switchvov.magicmq.client.MagicConsumer;
 import com.switchvov.magicmq.client.MagicProducer;
 import com.switchvov.magicmq.model.Message;
+import com.switchvov.magicmq.model.Stat;
 import com.switchvov.magicutils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * mq demo for order.
@@ -42,6 +44,7 @@ public class MagicMQDemo {
         while (true) {
             char c = (char) System.in.read();
             if (c == 'q' || c == 'e') {
+                log.info(" ===>[MagicMQ] exit: {}", c);
                 break;
             }
             if (c == 'p') {
@@ -49,20 +52,25 @@ public class MagicMQDemo {
                 producer.send(topic, new Message<>(ids++, JsonUtils.toJson(order), null));
                 log.info(" ===>[MagicMQ] send message ok: {}", order);
             }
-//            if (c == 'c') {
-//                Message<?> message = consumer.recv(topic);
-//                if (Objects.nonNull(message)) {
-//                    consumer.ack(topic, message);
-//                }
-//                log.info(" ===>[MagicMQ] recv message ok: {}", message);
-//            }
-            if (c == 'a') {
+            if (c == 'c') {
+                Message<?> message = consumer.recv(topic);
+                log.info(" ===>[MagicMQ] recv message ok: {}", message);
+                if (Objects.nonNull(message)) {
+                    consumer.ack(topic, message);
+                }
+            }
+            if (c == 's') {
+                Stat stat = consumer.stat(topic);
+                log.info(" ===>[MagicMQ] stat: {}", stat);
+            }
+            if (c == 'b') {
                 for (int i = 0; i < 10; i++) {
                     Order order = new Order(ids, "item" + ids, 100 * ids);
                     producer.send(topic, new Message<>(ids++, JsonUtils.toJson(order), null));
                 }
-                log.info(" ===>[MagicMQ] send 10 orders...");
+                log.info(" ===>[MagicMQ] batch send 10 orders...");
             }
         }
+        System.exit(1);
     }
 }

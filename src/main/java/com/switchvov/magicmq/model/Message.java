@@ -22,11 +22,11 @@ public class Message<T> {
     private T body;
     private Map<String, String> headers = new HashMap<>();
 
-    public static long getId() {
+    public static long nextId() {
         return ID_GEN.getAndIncrement();
     }
 
-    public static Message<?> create(String body, Map<String, String> headers) {
-        return new Message<>(getId(), body, headers);
+    public static Message<String> create(String body, Map<String, String> headers) {
+        return new Message<>(nextId(), body, headers);
     }
 }

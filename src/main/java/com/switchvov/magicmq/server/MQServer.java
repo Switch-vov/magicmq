@@ -2,6 +2,8 @@ package com.switchvov.magicmq.server;
 
 import com.switchvov.magicmq.model.Message;
 import com.switchvov.magicmq.model.Result;
+import com.switchvov.magicmq.model.Stat;
+import com.switchvov.magicmq.model.Subscription;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,14 +51,20 @@ public class MQServer {
     @RequestMapping("/sub")
     public Result<String> sub(@RequestParam("t") String topic,
                               @RequestParam("cid") String consumerId) {
-        MessageQueue.sub(new MessageSubscription(topic, consumerId, -1));
+        MessageQueue.sub(new Subscription(topic, consumerId, -1));
         return Result.ok();
     }
 
     @RequestMapping("/unsub")
     public Result<String> unsub(@RequestParam("t") String topic,
                                 @RequestParam("cid") String consumerId) {
-        MessageQueue.unsub(new MessageSubscription(topic, consumerId, -1));
+        MessageQueue.unsub(new Subscription(topic, consumerId, -1));
         return Result.ok();
+    }
+
+    @RequestMapping("/stat")
+    public Result<Stat> stat(@RequestParam("t") String topic,
+                             @RequestParam("cid") String consumerId) {
+        return Result.stat(MessageQueue.stat(topic, consumerId));
     }
 }
