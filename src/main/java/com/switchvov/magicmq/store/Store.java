@@ -24,7 +24,7 @@ import java.nio.file.StandardOpenOption;
  */
 @Slf4j
 public class Store {
-    public static final int LEN = 1024 * 10;
+    public static final int LEN = 1024 * 1024 * 10;
 
     private static final int INIT_POSITION = 0;
     private static final String FILE_SUFFIX = ".dat";
