@@ -1,5 +1,5 @@
 ### 订阅topic
-GET http://localhost:8765/magicmq/sub?t=com.switchvov.test&cid=test
+GET http://localhost:8765/magicmq/sub?t=com.switchvov.test&cid=CID0
 
 ### 发送消息
 POST http://localhost:8765/magicmq/send?t=com.switchvov.test
@@ -12,10 +12,10 @@ Content-Type: application/json;charset=utf8
 }
 
 ### 获取消息
-GET http://localhost:8765/magicmq/recv?t=com.switchvov.test&cid=test
+GET http://localhost:8765/magicmq/recv?t=com.switchvov.test&cid=CID0
 
 ### ack消息
-GET http://localhost:8765/magicmq/ack?t=com.switchvov.test&cid=test&offset=2
+GET http://localhost:8765/magicmq/ack?t=com.switchvov.test&cid=CID0&offset=2
 
 ### stat
 GET http://localhost:8765/magicmq/stat?t=com.switchvov.test&cid=CID0

@@ -114,7 +114,6 @@ public class MagicBroker {
         consumers.add(topic, consumer);
     }
 
-    // GET http://localhost:8765/magicmq/stat?t=com.switchvov.test&cid=CID0
     public Stat stat(String topic, String cid) {
         log.info(" ===>[MagicMQ] stat topic/cid: {}/{}", topic, cid);
         Result<Stat> result = HttpUtils.httpGet(brokerUrl + "/stat?t=" + topic + "&cid=" + cid,

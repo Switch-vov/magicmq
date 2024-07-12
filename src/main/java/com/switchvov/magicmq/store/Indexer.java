@@ -19,9 +19,9 @@ public class Indexer {
     private static final MultiValueMap<String, Entry> INDEXES = new LinkedMultiValueMap<>();
     private static final Map<String, Map<Integer, Entry>> MAPPINGS = new HashMap<>();
 
-    public static void addEntry(String topic, int offset, int len) {
-        log.info(" ===>[MagicMQ] add entry topic/offset/length = {}/{}/{}", topic, offset, len);
-        Entry value = new Entry(offset, len);
+    public static void addEntry(String topic, int offset, int len, String fileId) {
+        log.debug(" ===>[MagicMQ] add entry topic/offset/length/fileId = {}/{}/{}/{}", topic, offset, len, fileId);
+        Entry value = new Entry(offset, len, fileId);
         INDEXES.add(topic, value);
         putMapping(topic, offset, value);
     }
@@ -45,5 +45,6 @@ public class Indexer {
     public static class Entry {
         private int offset;
         private int length;
+        private String fileId;
     }
 }

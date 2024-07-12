@@ -1,14 +1,39 @@
 package com.switchvov.magicmq.store;
 
-import java.nio.MappedByteBuffer;
+import java.io.IOException;
 
 /**
- * file mapped for topic store
+ * interface of file mapped
  *
  * @author switch
- * @since 2024/07/11
+ * @since 2024/07/12
  */
-public class FileMapped {
-    private MappedByteBuffer mappedByteBuffer = null;
+public interface FileMapped {
+    void init() throws IOException;
 
+    void destroy();
+
+    /**
+     * write msg
+     *
+     * @param msg msg
+     * @return the offset of msg
+     */
+    int write(byte[] msg);
+
+    /**
+     * read msg
+     *
+     * @param entry the entry of index of msg
+     * @return msg data
+     */
+    byte[] read(Indexer.Entry entry);
+
+    int getEndOffset();
+
+    int getStorage();
+
+    default void resetStartOffset(int offset) {
+
+    }
 }

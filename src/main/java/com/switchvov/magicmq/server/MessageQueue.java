@@ -8,11 +8,7 @@ import com.switchvov.magicmq.store.Store;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * queues.
@@ -26,7 +22,11 @@ public class MessageQueue {
     private static final String TEST_TOPIC = "com.switchvov.test";
 
     static {
-        QUEUES.put(TEST_TOPIC, new MessageQueue(TEST_TOPIC));
+        init();
+    }
+
+    public static void init() {
+        QUEUES.putIfAbsent(TEST_TOPIC, new MessageQueue(TEST_TOPIC));
     }
 
     @Getter
@@ -174,7 +174,7 @@ public class MessageQueue {
             throw new RuntimeException("subscriptions not found for topic/consumerId = " + topic + "/" + consumerId);
         }
         Subscription subscription = messageQueue.getSubscriptions().get(consumerId);
-        if (offset > subscription.getOffset() && offset <= Store.LEN) {
+        if (offset > subscription.getOffset()) {
             log.info(" ===>[MagicMQ] ack: topic/cid/offset = {}/{}/{}", topic, consumerId, offset);
             subscription.setOffset(offset);
             return offset;

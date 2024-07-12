@@ -59,12 +59,23 @@ public class MagicMQDemo {
                     consumer.ack(topic, message);
                 }
             }
+            if (c == 'k') {
+                for (int i = 0; i < 100; i++) {
+                    Message<?> message = consumer.recv(topic);
+                    log.info(" ===>[MagicMQ] recv message ok: {}", message);
+                    if (Objects.nonNull(message)) {
+                        consumer.ack(topic, message);
+                    } else {
+                        break;
+                    }
+                }
+            }
             if (c == 's') {
                 Stat stat = consumer.stat(topic);
                 log.info(" ===>[MagicMQ] stat: {}", stat);
             }
             if (c == 'b') {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 100; i++) {
                     Order order = new Order(ids, "item" + ids, 100 * ids);
                     producer.send(topic, new Message<>(ids++, JsonUtils.toJson(order), null));
                 }
